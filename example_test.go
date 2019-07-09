@@ -4,8 +4,8 @@ import (
 	"log"
 
 	"github.com/emersion/go-imap"
-	"github.com/emersion/go-imap/client"
 	"github.com/emersion/go-imap-sortthread"
+	"github.com/emersion/go-imap/client"
 )
 
 func ExampleSortClient() {
