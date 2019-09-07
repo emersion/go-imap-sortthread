@@ -3,11 +3,6 @@
 // SORT and THREAD are defined in RFC 5256.
 package sortthread
 
-import (
-	"fmt"
-	"strconv"
-)
-
 const SortCapability = "SORT"
 
 var ThreadCapabilities = []string{"THREAD=ORDEREDSUBJECT", "THREAD=REF", "THREAD=REFERENCES"}
@@ -53,20 +48,4 @@ func formatSortCriteria(criteria []SortCriterion) interface{} {
 type Thread struct {
 	Id       uint32
 	Children []*Thread
-}
-
-func (t *Thread) String() string {
-	return fmt.Sprintf("(%s)", t.toString())
-}
-
-func (t *Thread) toString() string {
-	s := strconv.FormatUint(uint64(t.Id), 10)
-	if len(t.Children) == 1 {
-		s += fmt.Sprintf(" %s", t.Children[0].toString())
-	} else {
-		for _, child := range t.Children {
-			s += fmt.Sprintf(" (%s)", child.toString())
-		}
-	}
-	return s
 }
