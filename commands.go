@@ -8,8 +8,8 @@ import (
 
 // SortCommand is a SORT command.
 type SortCommand struct {
-	SortCriteria []SortCriterion
-	Charset string
+	SortCriteria   []SortCriterion
+	Charset        string
 	SearchCriteria *imap.SearchCriteria
 }
 
@@ -28,4 +28,22 @@ func (cmd *SortCommand) Command() *imap.Command {
 
 func (cmd *SortCommand) Parse(fields []interface{}) error {
 	return errors.New("sortthread: not yet implemented")
+}
+
+// ThreadCommand is a THREAD command.
+type ThreadCommand struct {
+	Algorithm      ThreadAlgorithm
+	Charset        string
+	SearchCriteria *imap.SearchCriteria
+}
+
+func (cmd *ThreadCommand) Command() *imap.Command {
+	return &imap.Command{
+		Name: "THREAD",
+		Arguments: []interface{}{
+			cmd.Algorithm,
+			cmd.Charset,
+			cmd.SearchCriteria.Format(),
+		},
+	}
 }

@@ -5,6 +5,16 @@ package sortthread
 
 const SortCapability = "SORT"
 
+var ThreadCapabilities = []string{"THREAD=ORDEREDSUBJECT", "THREAD=REF", "THREAD=REFERENCES"}
+
+// ThreadAlgorithm is the algorithm used by the server to sort messages
+type ThreadAlgorithm string
+
+const (
+	OrderedSubject ThreadAlgorithm = "ORDEREDSUBJECT"
+	References                     = "REFERENCES"
+)
+
 // SortField is a field that can be used to sort messages.
 type SortField string
 
@@ -33,4 +43,9 @@ func formatSortCriteria(criteria []SortCriterion) interface{} {
 		fields = append(fields, string(c.Field))
 	}
 	return fields
+}
+
+type Thread struct {
+	Id       uint32
+	Children []*Thread
 }
