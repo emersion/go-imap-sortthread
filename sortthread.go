@@ -3,6 +3,10 @@
 // SORT and THREAD are defined in RFC 5256.
 package sortthread
 
+import (
+	"github.com/emersion/go-imap"
+)
+
 const SortCapability = "SORT"
 
 var ThreadCapabilities = []string{"THREAD=ORDEREDSUBJECT", "THREAD=REF", "THREAD=REFERENCES"}
@@ -14,6 +18,10 @@ const (
 	OrderedSubject ThreadAlgorithm = "ORDEREDSUBJECT"
 	References                     = "REFERENCES"
 )
+
+func formatThreadAlgorithm(algorithm ThreadAlgorithm) imap.RawString {
+	return imap.RawString(algorithm)
+}
 
 // SortField is a field that can be used to sort messages.
 type SortField string
