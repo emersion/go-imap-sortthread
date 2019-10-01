@@ -41,7 +41,7 @@ func (cmd *ThreadCommand) Command() *imap.Command {
 	return &imap.Command{
 		Name: "THREAD",
 		Arguments: []interface{}{
-			cmd.Algorithm,
+			formatThreadAlgorithm(cmd.Algorithm),
 			cmd.Charset,
 			cmd.SearchCriteria.Format(),
 		},
