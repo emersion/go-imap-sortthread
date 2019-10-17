@@ -43,13 +43,21 @@ func (cmd *ThreadCommand) Command() *imap.Command {
 		cmd.Charset,
 	}
 
-	// Verify if SearchCriteria is empty to use "ALL" as criteria
-	isSearchCriteriaEmpty := cmd.SearchCriteria == nil || len(cmd.SearchCriteria.Format()) == 0
+	addAllSearchCriteria := true
 
-	if isSearchCriteriaEmpty {
+	// Verify if SearchCriteria is empty to use "ALL" as criteria
+	if cmd.SearchCriteria != nil {
+		searchFormat := cmd.SearchCriteria.Format()
+
+		if len(searchFormat) > 0 {
+			addAllSearchCriteria = false
+
+			args = append(args, searchFormat)
+		}
+	}
+
+	if addAllSearchCriteria {
 		args = append(args, imap.RawString("ALL"))
-	} else {
-		args = append(args, cmd.SearchCriteria.Format())
 	}
 
 	return &imap.Command{
