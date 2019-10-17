@@ -38,12 +38,22 @@ type ThreadCommand struct {
 }
 
 func (cmd *ThreadCommand) Command() *imap.Command {
+	args := []interface{}{
+		formatThreadAlgorithm(cmd.Algorithm),
+		cmd.Charset,
+	}
+
+	// Verify if SearchCriteria is empty to use "ALL" as criteria
+	isSearchCriteriaEmpty := cmd.SearchCriteria == nil || len(cmd.SearchCriteria.Format()) == 0
+
+	if isSearchCriteriaEmpty {
+		args = append(args, imap.RawString("ALL"))
+	} else {
+		args = append(args, cmd.SearchCriteria.Format())
+	}
+
 	return &imap.Command{
-		Name: "THREAD",
-		Arguments: []interface{}{
-			formatThreadAlgorithm(cmd.Algorithm),
-			cmd.Charset,
-			cmd.SearchCriteria.Format(),
-		},
+		Name:      "THREAD",
+		Arguments: args,
 	}
 }
