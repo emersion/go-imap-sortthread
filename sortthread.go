@@ -5,7 +5,6 @@ package sortthread
 
 import (
 	"fmt"
-	"mime"
 	"regexp"
 	"strings"
 
@@ -69,8 +68,10 @@ var (
 
 	// Includes regex for ABNF rules relevant to base subject
 	// Note that all ABNF strings are considered lowercase
-	subjFwdHeader = "[fwd:"
-	subjFwdTrail  = "]"
+
+	// subj-fwd-hdr    = "[fwd:"
+	// subj-fwd-trl    = "]"
+	subjFwd = regexp.MustCompile(`(?i)^\[fwd:(.*?)\]$`)
 
 	// BLOBCHAR        = %x01-5a / %x5c / %x5e-ff
 	// subj-blob       = "[" *BLOBCHAR "]" *WSP
@@ -105,9 +106,9 @@ func replaceArtifacts(subject string, isReplyFwd *bool) string {
 	return replacePrefix(subject, isReplyFwd)
 }
 
-// Steps 3 & 4 in RFC Section 2.1
+// Steps 3-5 in RFC Section 2.1
 func replacePrefix(subject string, isReplyFwd *bool) string {
-	// Repeat (3) and (4) until no matches remain.
+	// (5) Repeat (3) and (4) until no matches remain.
 	for {
 		// (3) Remove all prefix text of the subject that matches the subj-
 		// leader ABNF.
@@ -133,24 +134,14 @@ func replacePrefix(subject string, isReplyFwd *bool) string {
 	return subject
 }
 
-func GetBaseSubject(subject string, isReplyFwd *bool) (string, error) {
-	var (
-		baseSubject string
-		err         error
-	)
-
+func GetBaseSubject(subject string, isReplyFwd *bool) string {
+	baseSubject := subject
 	*isReplyFwd = false
 
 	// (1) Convert any RFC 2047 encoded-words in the subject to [UTF-8]
 	// as described in "Internationalization Considerations".
 	// Convert all tabs and continuations to space.  Convert all
 	// multiple spaces to a single space.
-	dec := new(mime.WordDecoder)
-	baseSubject, err = dec.DecodeHeader(subject)
-	if err != nil {
-		return "", err
-	}
-
 	baseSubject = tabsContinuation.ReplaceAllString(baseSubject, " ")
 	baseSubject = repeatedSpaces.ReplaceAllString(baseSubject, " ")
 
@@ -161,13 +152,15 @@ func GetBaseSubject(subject string, isReplyFwd *bool) (string, error) {
 		// (6) If the resulting text begins with the subj-fwd-hdr ABNF and
 		// ends with the subj-fwd-trl ABNF, remove the subj-fwd-hdr and
 		// subj-fwd-trl and repeat from step (2).
-		if !strings.HasPrefix(baseSubject, subjFwdHeader) || !strings.HasSuffix(baseSubject, subjFwdTrail) {
+		submatches := subjFwd.FindStringSubmatch(baseSubject)
+		if len(submatches) == 0 {
 			break
+		} else if len(submatches) != 2 {
+			panic(fmt.Errorf("Regex undefined behavior on subject %s", baseSubject))
 		}
+		baseSubject = submatches[1]
 		*isReplyFwd = true
-		baseSubject = strings.TrimPrefix(baseSubject, subjFwdHeader)
-		baseSubject = strings.TrimSuffix(baseSubject, subjFwdTrail)
 	}
 
-	return baseSubject, nil
+	return baseSubject
 }

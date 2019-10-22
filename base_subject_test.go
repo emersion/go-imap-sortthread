@@ -32,16 +32,25 @@ var baseSubjectTests = []struct {
 		expected:   "ugh",
 		isReplyFwd: true,
 	},
+	{
+		name:       "forward_header_simple",
+		subject:    "[FWD: simple [extraction]]",
+		expected:   "simple [extraction]",
+		isReplyFwd: true,
+	},
+	{
+		name:       "foward_header_nested",
+		subject:    "Re: [fwd: Re: [OCF] Service update during PG&E outage]",
+		expected:   "[OCF] Service update during PG&E outage",
+		isReplyFwd: true,
+	},
 }
 
 func TestBaseSubject(t *testing.T) {
 	for _, test := range baseSubjectTests {
 		t.Run(test.name, func(t *testing.T) {
 			var isReplyFwd bool
-			baseSubject, err := GetBaseSubject(test.subject, &isReplyFwd)
-			if err != nil {
-				t.Error("Expected no error while parsing subject but got:", err)
-			}
+			baseSubject := GetBaseSubject(test.subject, &isReplyFwd)
 			if baseSubject != test.expected {
 				t.Errorf("Got %s, Expected %s.", baseSubject, test.expected)
 			}
