@@ -49,8 +49,7 @@ var baseSubjectTests = []struct {
 func TestBaseSubject(t *testing.T) {
 	for _, test := range baseSubjectTests {
 		t.Run(test.name, func(t *testing.T) {
-			var isReplyFwd bool
-			baseSubject := GetBaseSubject(test.subject, &isReplyFwd)
+			baseSubject, isReplyFwd := GetBaseSubject(test.subject)
 			if baseSubject != test.expected {
 				t.Errorf("Got %s, Expected %s.", baseSubject, test.expected)
 			}

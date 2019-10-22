@@ -87,14 +87,13 @@ var (
 	subjTrailer = regexp.MustCompile(`(?i)\(fwd\)$`)
 )
 
-// Steps 2-4 in RFC Section 2.1
+// Steps 2-5 in RFC Section 2.1
 func replaceArtifacts(subject string, isReplyFwd *bool) string {
 	// (2) Remove all trailing text of the subject that matches the
 	// subj-trailer ABNF; repeat until no more matches are possible.
 	for {
 		noTrail := strings.TrimSuffix(subject, " ")
 		if subjTrailer.MatchString(noTrail) {
-
 			noTrail = subjTrailer.ReplaceAllString(noTrail, "")
 			*isReplyFwd = true
 		}
@@ -134,9 +133,13 @@ func replacePrefix(subject string, isReplyFwd *bool) string {
 	return subject
 }
 
-func GetBaseSubject(subject string, isReplyFwd *bool) string {
+// GetBaseSubject returns the base subject of the given string according to
+// Section 2.1. The returned string is suitable for comparison with other base
+// subjects. The returned bool indicates whether the subject is a reply or a
+// forward.
+func GetBaseSubject(subject string) (string, bool) {
 	baseSubject := subject
-	*isReplyFwd = false
+	isReplyFwd := false
 
 	// (1) Convert any RFC 2047 encoded-words in the subject to [UTF-8]
 	// as described in "Internationalization Considerations".
@@ -147,7 +150,7 @@ func GetBaseSubject(subject string, isReplyFwd *bool) string {
 
 	for {
 		// Steps 2-5
-		baseSubject = replaceArtifacts(baseSubject, isReplyFwd)
+		baseSubject = replaceArtifacts(baseSubject, &isReplyFwd)
 
 		// (6) If the resulting text begins with the subj-fwd-hdr ABNF and
 		// ends with the subj-fwd-trl ABNF, remove the subj-fwd-hdr and
@@ -159,8 +162,8 @@ func GetBaseSubject(subject string, isReplyFwd *bool) string {
 			panic(fmt.Errorf("Regex undefined behavior on subject %s", baseSubject))
 		}
 		baseSubject = submatches[1]
-		*isReplyFwd = true
+		isReplyFwd = true
 	}
 
-	return baseSubject
+	return baseSubject, isReplyFwd
 }
