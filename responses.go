@@ -1,7 +1,7 @@
 package sortthread
 
 import (
-	"errors"
+	"strconv"
 
 	"github.com/emersion/go-imap"
 	"github.com/emersion/go-imap/responses"
@@ -34,7 +34,13 @@ func (r *SortResponse) Handle(resp imap.Resp) error {
 }
 
 func (r *SortResponse) WriteTo(w *imap.Writer) error {
-	return errors.New("sortthread: not yet implemented")
+	fields := make([]interface{}, 0, len(r.Ids)+1)
+	fields = append(fields, imap.RawString("SORT"))
+	for _, id := range r.Ids {
+		fields = append(fields, imap.RawString(strconv.FormatInt(int64(id), 10)))
+	}
+
+	return imap.NewUntaggedResp(fields).WriteTo(w)
 }
 
 func (r *ThreadResponse) Handle(resp imap.Resp) error {
@@ -56,7 +62,7 @@ func parseThreadResp(fields []interface{}) ([]*Thread, error) {
 	var siblings []*Thread
 	for _, f := range fields {
 		switch f := f.(type) {
-		case string:
+		case string, imap.RawString:
 			id, err := imap.ParseNumber(f)
 			if err != nil {
 				return nil, err
@@ -85,4 +91,30 @@ func parseThreadResp(fields []interface{}) ([]*Thread, error) {
 		}
 	}
 	return siblings, nil
+}
+
+func formatThread(thread *Thread) []interface{} {
+	f := make([]interface{}, 0, 1+len(thread.Children))
+	f = append(f, imap.RawString(strconv.FormatInt(int64(thread.Id), 10)))
+	if len(thread.Children) == 1 {
+		f = append(f, formatThread(thread.Children[0])...)
+	} else {
+		for _, c := range thread.Children {
+			f = append(f, formatThread(c))
+		}
+	}
+	return f
+}
+
+func formatThreadResp(threads []*Thread) []interface{} {
+	fields := make([]interface{}, 0, len(threads)+1)
+	fields = append(fields, imap.RawString("THREAD"))
+	for _, t := range threads {
+		fields = append(fields, formatThread(t))
+	}
+	return fields
+}
+
+func (r *ThreadResponse) WriteTo(w *imap.Writer) error {
+	return imap.NewUntaggedResp(formatThreadResp(r.Threads)).WriteTo(w)
 }
