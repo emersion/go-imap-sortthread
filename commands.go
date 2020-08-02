@@ -46,6 +46,7 @@ func parseSortCriteria(fields interface{}) ([]SortCriterion, error) {
 			reverse = true
 			continue
 		}
+		crit = strings.ToUpper(crit)
 		switch crit {
 		// TODO: Fix types for constants.
 		case string(SortArrival), SortCc, SortDate, SortFrom, SortSize, SortSubject, SortTo:
