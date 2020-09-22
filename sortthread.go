@@ -50,9 +50,9 @@ func formatSortCriteria(criteria []SortCriterion) interface{} {
 	fields := make([]interface{}, 0, len(criteria))
 	for _, c := range criteria {
 		if c.Reverse {
-			fields = append(fields, "REVERSE")
+			fields = append(fields, imap.RawString("REVERSE"))
 		}
-		fields = append(fields, string(c.Field))
+		fields = append(fields, imap.RawString(c.Field))
 	}
 	return fields
 }
