@@ -1,0 +1,9 @@
+image: alpine/edge
+packages:
+  - go
+sources:
+  - https://github.com/emersion/go-imap-sortthread
+tasks:
+  - test: |
+      cd go-imap-sortthread
+      go test -v ./...
