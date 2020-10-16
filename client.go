@@ -33,8 +33,8 @@ func (c *SortClient) sort(uid bool, sortCriteria []SortCriterion, searchCriteria
 
 	var cmd imap.Commander
 	cmd = &SortCommand{
-		SortCriteria: sortCriteria,
-		Charset:  "UTF-8",
+		SortCriteria:   sortCriteria,
+		Charset:        "UTF-8",
 		SearchCriteria: searchCriteria,
 	}
 	if uid {

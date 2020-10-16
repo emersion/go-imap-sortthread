@@ -2,7 +2,6 @@ package sortthread
 
 import (
 	"reflect"
-	"strings"
 	"testing"
 
 	"github.com/emersion/go-imap"
@@ -170,7 +169,7 @@ func TestThreadFormatting(t *testing.T) {
 
 		t.Run(test.name, func(t *testing.T) {
 			fields := formatThreadResp(test.expected)
-			if !reflect.DeepEqual(fields, test.response) {
+			if !reflect.DeepEqual(fields[1:], test.response) {
 				t.Errorf("Could not format %s properly", test.str)
 				t.Logf("Want: %#+v", test.response)
 				t.Logf("Got:  %#+v", fields)
